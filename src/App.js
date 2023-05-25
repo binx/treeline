@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, /*useState*/ } from 'react';
 import './App.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -19,17 +19,17 @@ function App() {
 
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [lng, setLng] = useState(-123.4588917);
-  const [lat, setLat] = useState(48.930359);
-  const [zoom, setZoom] = useState(11);
+  // const [lng, setLng] = useState(-123.4588917);
+  // const [lat, setLat] = useState(48.930359);
+  // const [zoom, setZoom] = useState(11);
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/binx/cleyiayif000101r4z2u9y49q',
-      center: [lng, lat],
-      zoom: zoom
+      center: [-123.4588917, 48.930359],
+      zoom: 11
     });
 
     map.current.on('load', () => {
