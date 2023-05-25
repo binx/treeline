@@ -69,7 +69,7 @@ function App() {
             }
           });
 
-          const legendString = legend.map((l, index) => 
+          const legendString = legend.map((l, index) =>
             index < legend.length - 1 ? [l.value, l.color] : l.color
           ).flat()
 
@@ -104,12 +104,14 @@ function App() {
     <div>
       <div className="legend">
         <div>Number of Visible Points:</div>
-        { legend.map(l => (
-          <div key={l.value}>
-            <span className="marker" style={{ backgroundColor: l.color }}></span>
-            <div>{l.value}</div>
-          </div>
-        ))}
+        <div>
+          {legend.map(l => (
+            <div key={l.value}>
+              <span className="marker" style={{ backgroundColor: l.color }}></span>
+              <div>{l.value}</div>
+            </div>
+          ))}
+        </div>
       </div>
       <div ref={mapContainer} className="map-container" />
     </div>
