@@ -35,7 +35,7 @@ function Map({ legend, features }) {
 
       const colorString = [
         'match',
-        ['get', 'n'],
+        ['get', 'type'],
         ...legendString
       ]
       const layer = {

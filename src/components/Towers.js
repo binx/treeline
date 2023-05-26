@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Select } from 'antd';
 
-function Towers({ towers, setSelectedTowers }) {
+import Legend from "./Legend";
+
+function Towers({ towers, setSelectedTowers, legend }) {
   const [options, setOptions] = useState([]);
 
   useEffect(() => {
@@ -13,7 +15,7 @@ function Towers({ towers, setSelectedTowers }) {
   };
 
   return (
-    <div className="select">
+    <div className="top-right">
       <Select
         mode="tags"
         allowClear
@@ -22,6 +24,7 @@ function Towers({ towers, setSelectedTowers }) {
         onChange={handleChange}
         options={options}
       />
+      <Legend legend={legend} />
     </div>
   );
 }

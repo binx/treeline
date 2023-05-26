@@ -13,6 +13,7 @@
 
 .legend>div {
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   padding: 4px 0;
 }
@@ -20,7 +21,7 @@
 .legend>div>div {
   display: flex;
   align-items: center;
-  margin-right: 25px;
+  margin-top: 12px;
 }
 
 .legend .marker {
@@ -31,7 +32,7 @@
   margin-right: 5px;
 }
 
-.select {
+.top-right {
   background: white;
   padding: 20px;
   position: absolute;
