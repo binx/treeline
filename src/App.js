@@ -55,11 +55,6 @@ function App() {
       });
   }, []);
 
-  function hasCommonStrings(array1, array2) {
-    const commonStrings = array1.filter((string) => array2.includes(string));
-    return commonStrings.length > 0;
-  }
-
   useEffect(() => {
     if (!data.length) return;
     const treeFeatures = [];

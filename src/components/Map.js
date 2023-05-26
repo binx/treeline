@@ -55,7 +55,7 @@ function Map({ legend, features }) {
       }
       map.current.addLayer(layer);
     });
-  }, [features]);
+  }, [features, legend]);
 
   useEffect(() => {
     if (!map.current || !map.current.getSource('points')) return;
