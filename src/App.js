@@ -1,11 +1,12 @@
-import { useRef, useEffect, /*useState*/ } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import 'antd/dist/reset.css';
 
 import trees from "./trees.csv";
 
-import mapboxgl from 'mapbox-gl';
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
+import Map from "./components/Map";
+import Towers from "./components/Towers";
+import Legend from "./components/Legend";
 
 const legend = [
   { value: '1', color: '#FFD4B4' },
@@ -17,103 +18,81 @@ const legend = [
 
 function App() {
 
-  const mapContainer = useRef(null);
-  const map = useRef(null);
-  // const [lng, setLng] = useState(-123.4588917);
-  // const [lat, setLat] = useState(48.930359);
-  // const [zoom, setZoom] = useState(11);
+  const [data, setData] = useState([])
+  const [features, setFeatures] = useState([]);
+  const [towers, setTowers] = useState([]);
+  const [selectedTowers, setSelectedTowers] = useState([]);
 
   useEffect(() => {
-    if (map.current) return; // initialize map only once
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/binx/cleyiayif000101r4z2u9y49q',
-      center: [-123.4588917, 48.930359],
-      zoom: 11
-    });
+    fetch(trees)
+      .then(resp => resp.text())
+      .then(result => {
+        const array = [];
+        let uniqueTowers = [];
 
-    map.current.on('load', () => {
-      fetch(trees)
-        .then(resp => resp.text())
-        .then(result => {
-          const treeFeatures = [];
-          const lines = result.split("\n");
-          const headers = lines[0].split(",");
+        const lines = result.split("\n");
+        const headers = lines[0].split(",");
 
-          for (let i = 1; i < lines.length; i++) {
-            var obj = {};
-            var currentline = lines[i].split(",");
-            for (var j = 0; j < headers.length; j++) {
-              obj[headers[j]] = currentline[j];
-            }
-
-            treeFeatures.push({
-              'type': 'Feature',
-              'geometry': {
-                'type': 'Point',
-                'coordinates': [
-                  obj.lon, obj.lat
-                ]
-              },
-              'properties': {
-                "n": obj.n
-              }
-            });
+        for (let i = 1; i < lines.length; i++) {
+          var obj = {};
+          var currentline = lines[i].split(",");
+          for (let j = 0; j < headers.length; j++) {
+            obj[headers[j]] = currentline[j];
           }
 
-          map.current.addSource('points', {
-            'type': 'geojson',
-            'data': {
-              'type': 'FeatureCollection',
-              'features': treeFeatures
-            }
-          });
+          if (obj.aps) {
+            const seenTowers = obj.aps.split(";").map(a => a.replace(/\([^()]*\)$/, "").trim());
 
-          const legendString = legend.map((l, index) =>
-            index < legend.length - 1 ? [l.value, l.color] : l.color
-          ).flat()
-
-          const colorString = [
-            'match',
-            ['get', 'n'],
-            ...legendString
-          ]
-          const layer = {
-            'id': 'points',
-            'type': 'circle',
-            'source': 'points',
-            'paint': {
-              // Make circles larger as the user zooms from z12 to z22.
-              'circle-radius': {
-                'base': 1.75,
-                'stops': [
-                  [11, 1],
-                  [16, 5]
-                ]
-              },
-              'circle-color': colorString
-            }
+            obj.aps = seenTowers;
+            uniqueTowers = [...new Set([...uniqueTowers, ...seenTowers])]
           }
-          map.current.addLayer(layer);
-        });
-    });
+
+          array.push(obj);
+        }
+
+        setData(array);
+        setTowers(uniqueTowers.sort());
+      });
   }, []);
 
+  function hasCommonStrings(array1, array2) {
+    const commonStrings = array1.filter((string) => array2.includes(string));
+    return commonStrings.length > 0;
+  }
+
+  useEffect(() => {
+    if (!data.length) return;
+    const treeFeatures = [];
+
+    data.forEach(obj => {
+      if (!selectedTowers.length
+        || !obj.aps.filter(t => selectedTowers.includes(t)).length
+      )
+        return;
+
+
+      treeFeatures.push({
+        'type': 'Feature',
+        'geometry': {
+          'type': 'Point',
+          'coordinates': [
+            obj.lon, obj.lat
+          ]
+        },
+        'properties': {
+          "n": obj.n
+        }
+      });
+    })
+
+    setFeatures(treeFeatures);
+  }, [data, selectedTowers]);
 
   return (
     <div>
-      <div className="legend">
-        <div>Number of Visible Points:</div>
-        <div>
-          {legend.map(l => (
-            <div key={l.value}>
-              <span className="marker" style={{ backgroundColor: l.color }}></span>
-              <div>{l.value}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div ref={mapContainer} className="map-container" />
+      <Legend legend={legend} />
+      <Towers towers={towers} setSelectedTowers={setSelectedTowers} />
+      <Map legend={legend} features={features} />
     </div>
   );
 }
