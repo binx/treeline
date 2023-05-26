@@ -24,6 +24,8 @@ function App() {
 
   const [data, setData] = useState([])
   const [features, setFeatures] = useState([]);
+  const [kmFilter, setKmFilter] = useState(null);
+
   const [towers, setTowers] = useState([]);
   const [selectedTowers, setSelectedTowers] = useState([]);
 
@@ -45,10 +47,21 @@ function App() {
           }
 
           if (obj.aps) {
-            const seenTowers = obj.aps.split(";").map(a => a.replace(/\([^()]*\)$/, "").trim());
+            const seenTowers = obj.aps.split(";")
+              .map(a => {
+                //a.replace(/\([^()]*\)$/, "").trim()
+
+                // messy :)
+                const parts = a.split("(");
+                return {
+                  tower: parts[0].trim(),
+                  distance: +parts[1].split("km")[0]
+                }
+              });
 
             obj.aps = seenTowers;
-            uniqueTowers = [...new Set([...uniqueTowers, ...seenTowers])]
+            const towerList = seenTowers.map(t => t.tower);
+            uniqueTowers = [...new Set([...uniqueTowers, ...towerList])]
           }
 
           array.push(obj);
@@ -63,26 +76,29 @@ function App() {
     if (!data.length) return;
     const treeFeatures = [];
 
+    function isSubset(array1, array2) {
+      for (const value of array1) {
+        if (array2.indexOf(value) === -1) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    if (!selectedTowers.length) return;
+
     data.forEach(obj => {
-      if (!selectedTowers.length ||
-        !obj.aps.filter(t => selectedTowers.includes(t)).length
-      )
+      const towerList = obj.aps
+        .filter(t => kmFilter ? t.distance <= kmFilter : true)
+        .map(t => t.tower);
+      if (!towerList.filter(t => selectedTowers.includes(t)).length)
         return;
 
-      function isSubset(array1, array2) {
-        for (const value of array1) {
-          if (array2.indexOf(value) === -1) {
-            return false;
-          }
-        }
-        return true;
-      }
+      const intersection = isSubset(selectedTowers, towerList);
+      const subtraction = isSubset(towerList, selectedTowers);
 
+      // leave null as default for mapbox coloring default
       let type;
-
-      const intersection = isSubset(selectedTowers, obj.aps);
-      const subtraction = isSubset(obj.aps, selectedTowers);
-
       // intersection is only interesting if there's a 2+ set
       if (selectedTowers.length > 1 && intersection) type = "intersection";
       else if (subtraction) type = "subtraction";
@@ -102,11 +118,17 @@ function App() {
     })
 
     setFeatures(treeFeatures);
-  }, [data, selectedTowers]);
+  }, [data, selectedTowers, kmFilter]);
 
   return (
     <div>
-      <Towers legend={legend} towers={towers} setSelectedTowers={setSelectedTowers} />
+      <Towers
+        legend={legend}
+        towers={towers}
+        setSelectedTowers={setSelectedTowers}
+        kmFilter={kmFilter}
+        setKmFilter={setKmFilter}
+      />
       <Map legend={legend} features={features} />
     </div>
   );

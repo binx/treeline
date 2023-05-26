@@ -11,7 +11,7 @@ root.render(
   <React.StrictMode>
     <ConfigProvider theme={{
       token: {
-        colorPrimary: '#00b96b',
+        colorPrimary: '#BBC3D3',
       },
     }}>
       <App />
