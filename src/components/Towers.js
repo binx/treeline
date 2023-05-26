@@ -35,7 +35,14 @@ function Towers({
       <div style={{ marginTop: "18px", display: "flex", alignItems: "center" }}>
         <Checkbox
           checked={filterKmBool}
-          onChange={() => setFilterKmBool(!filterKmBool)}
+          onChange={() => {
+            if (filterKmBool) {
+              setKmFilter(null)
+            } else {
+              setKmFilter(5)
+            }
+            setFilterKmBool(!filterKmBool)
+          }}
         >
           Filter to km:
         </Checkbox>

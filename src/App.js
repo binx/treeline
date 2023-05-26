@@ -85,7 +85,10 @@ function App() {
       return true;
     }
 
-    if (!selectedTowers.length) return;
+    if (!selectedTowers.length) {
+      setFeatures([]);
+      return;
+    }
 
     data.forEach(obj => {
       const towerList = obj.aps
