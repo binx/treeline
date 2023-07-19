@@ -23,23 +23,28 @@ function Map({ legend, features, candidateMode, toggleCandidateMode }) {
     });
   }, [features]);
 
-  const selectCandidate = useCallback((event) => {
-    if (!map.current || !map.current.getSource("radius-circle")) return;
+  const selectCandidate = useCallback(
+    (event) => {
+      if (!map.current || !map.current.getSource("radius-circle")) return;
 
-    const coordinates = event.lngLat;
-    marker.current.setLngLat([coordinates.lng, coordinates.lat]);
+      const coordinates = event.lngLat;
+      marker.current.setLngLat([coordinates.lng, coordinates.lat]);
 
-    const point = turf.point([coordinates.lng, coordinates.lat]);
-    const buffered = turf.buffer(point, 5.5, { units: "kilometers" });
-    const bbox = turf.bbox(buffered);
-    map.current.fitBounds(bbox);
+      const point = turf.point([coordinates.lng, coordinates.lat]);
+      const buffered = turf.buffer(point, 5.5, { units: "kilometers" });
+      const bbox = turf.bbox(buffered);
+      map.current.fitBounds(bbox);
 
-    map.current
-      .getSource("radius-circle")
-      .setData(createGeoJSONCircle([coordinates.lng, coordinates.lat], 5).data);
+      map.current
+        .getSource("radius-circle")
+        .setData(
+          createGeoJSONCircle([coordinates.lng, coordinates.lat], 5).data
+        );
 
-    toggleCandidateMode(false);
-  }, []);
+      toggleCandidateMode(false);
+    },
+    [toggleCandidateMode]
+  );
 
   useEffect(() => {
     map.current.getCanvas().style.cursor = candidateMode ? "crosshair" : "grab";
