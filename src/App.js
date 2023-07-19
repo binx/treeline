@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import './App.css';
-import 'antd/dist/reset.css';
+import { useEffect, useState } from "react";
+import "./App.css";
+import "antd/dist/reset.css";
 
 import trees from "./trees.csv";
 
@@ -15,24 +15,36 @@ import Towers from "./components/Towers";
 //   { value: '5+', color: '#FA599C' }
 // ]
 const legend = [
-  { value: 'intersection', color: "#BD86AF", label: "tree is seen by all selected towers" },
-  { value: 'subtraction', color: "#6A7091", label: "tree is only seen by these towers" },
-  { value: 'default', color: "#DEC286", label: "tree is also seen by other towers" }
-]
+  {
+    value: "intersection",
+    color: "#BD86AF",
+    label: "tree is seen by all selected towers",
+  },
+  {
+    value: "subtraction",
+    color: "#6A7091",
+    label: "tree is only seen by these towers",
+  },
+  {
+    value: "default",
+    color: "#DEC286",
+    label: "tree is also seen by other towers",
+  },
+];
 
 function App() {
-
-  const [data, setData] = useState([])
+  const [data, setData] = useState([]);
   const [features, setFeatures] = useState([]);
   const [kmFilter, setKmFilter] = useState(null);
 
   const [towers, setTowers] = useState([]);
   const [selectedTowers, setSelectedTowers] = useState([]);
+  const [candidateMode, toggleCandidateMode] = useState(false);
 
   useEffect(() => {
     fetch(trees)
-      .then(resp => resp.text())
-      .then(result => {
+      .then((resp) => resp.text())
+      .then((result) => {
         const array = [];
         let uniqueTowers = [];
 
@@ -47,21 +59,20 @@ function App() {
           }
 
           if (obj.aps) {
-            const seenTowers = obj.aps.split(";")
-              .map(a => {
-                //a.replace(/\([^()]*\)$/, "").trim()
+            const seenTowers = obj.aps.split(";").map((a) => {
+              //a.replace(/\([^()]*\)$/, "").trim()
 
-                // messy :)
-                const parts = a.split("(");
-                return {
-                  tower: parts[0].trim(),
-                  distance: +parts[1].split("km")[0]
-                }
-              });
+              // messy :)
+              const parts = a.split("(");
+              return {
+                tower: parts[0].trim(),
+                distance: +parts[1].split("km")[0],
+              };
+            });
 
             obj.aps = seenTowers;
-            const towerList = seenTowers.map(t => t.tower);
-            uniqueTowers = [...new Set([...uniqueTowers, ...towerList])]
+            const towerList = seenTowers.map((t) => t.tower);
+            uniqueTowers = [...new Set([...uniqueTowers, ...towerList])];
           }
 
           array.push(obj);
@@ -90,12 +101,11 @@ function App() {
       return;
     }
 
-    data.forEach(obj => {
+    data.forEach((obj) => {
       const towerList = obj.aps
-        .filter(t => kmFilter ? t.distance <= kmFilter : true)
-        .map(t => t.tower);
-      if (!towerList.filter(t => selectedTowers.includes(t)).length)
-        return;
+        .filter((t) => (kmFilter ? t.distance <= kmFilter : true))
+        .map((t) => t.tower);
+      if (!towerList.filter((t) => selectedTowers.includes(t)).length) return;
 
       const intersection = isSubset(selectedTowers, towerList);
       const subtraction = isSubset(towerList, selectedTowers);
@@ -107,18 +117,16 @@ function App() {
       else if (subtraction) type = "subtraction";
 
       treeFeatures.push({
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [
-            obj.lon, obj.lat
-          ]
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [obj.lon, obj.lat],
         },
-        'properties': {
-          "type": type
-        }
+        properties: {
+          type: type,
+        },
       });
-    })
+    });
 
     setFeatures(treeFeatures);
   }, [data, selectedTowers, kmFilter]);
@@ -131,8 +139,15 @@ function App() {
         setSelectedTowers={setSelectedTowers}
         kmFilter={kmFilter}
         setKmFilter={setKmFilter}
+        candidateMode={candidateMode}
+        toggleCandidateMode={toggleCandidateMode}
       />
-      <Map legend={legend} features={features} />
+      <Map
+        legend={legend}
+        features={features}
+        candidateMode={candidateMode}
+        toggleCandidateMode={toggleCandidateMode}
+      />
     </div>
   );
 }

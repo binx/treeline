@@ -1,74 +1,55 @@
-import { useRef, useEffect } from 'react';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { useRef, useEffect, useCallback } from "react";
+import "mapbox-gl/dist/mapbox-gl.css";
+import * as turf from "@turf/turf";
 
-import mapboxgl from 'mapbox-gl';
+import { loadInitialMap, createGeoJSONCircle } from "./util";
 
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
-
-function Map({ legend, features }) {
-
+function Map({ legend, features, candidateMode, toggleCandidateMode }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const marker = useRef(null);
 
   useEffect(() => {
     if (map.current) return;
-
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/binx/cleyiayif000101r4z2u9y49q',
-      center: [-123.4588917, 48.930359],
-      zoom: 11
-    });
-
-    map.current.on('load', () => {
-      map.current.addSource('points', {
-        'type': 'geojson',
-        'data': {
-          'type': 'FeatureCollection',
-          'features': []
-        }
-      });
-
-      const legendString = legend.map((l, index) =>
-        index < legend.length - 1 ? [l.value, l.color] : l.color
-      ).flat()
-
-      const colorString = [
-        'match',
-        ['get', 'type'],
-        ...legendString
-      ]
-      const layer = {
-        'id': 'points',
-        'type': 'circle',
-        'source': 'points',
-        'paint': {
-          'circle-radius': {
-            'base': 1.75,
-            'stops': [
-              [11, 1],
-              [16, 5]
-            ]
-          },
-          'circle-color': colorString
-        }
-      }
-      map.current.addLayer(layer);
-    });
-  }, [features, legend]);
+    loadInitialMap(mapContainer, map, marker, legend);
+  }, [legend]);
 
   useEffect(() => {
-    if (!map.current || !map.current.getSource('points')) return;
+    if (!map.current || !map.current.getSource("points")) return;
 
-    map.current.getSource('points').setData({
-      'type': 'FeatureCollection',
-      'features': features
+    map.current.getSource("points").setData({
+      type: "FeatureCollection",
+      features: features,
     });
   }, [features]);
 
-  return (
-    <div ref={mapContainer} className="map-container" />
-  );
+  const selectCandidate = useCallback((event) => {
+    if (!map.current || !map.current.getSource("radius-circle")) return;
+
+    const coordinates = event.lngLat;
+    marker.current.setLngLat([coordinates.lng, coordinates.lat]);
+
+    const point = turf.point([coordinates.lng, coordinates.lat]);
+    const buffered = turf.buffer(point, 5.5, { units: "kilometers" });
+    const bbox = turf.bbox(buffered);
+    map.current.fitBounds(bbox);
+
+    map.current
+      .getSource("radius-circle")
+      .setData(createGeoJSONCircle([coordinates.lng, coordinates.lat], 5).data);
+
+    toggleCandidateMode(false);
+  });
+
+  useEffect(() => {
+    map.current.getCanvas().style.cursor = candidateMode ? "crosshair" : "grab";
+
+    // do this to avoid adding multiple event handlers on the map
+    if (candidateMode) map.current.on("click", selectCandidate);
+    return () => map.current.off("click", selectCandidate);
+  }, [candidateMode]);
+
+  return <div ref={mapContainer} className="map-container" />;
 }
 
 export default Map;

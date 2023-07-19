@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Select, Checkbox, InputNumber } from 'antd';
+import { Select, Checkbox, InputNumber, Button } from "antd";
 
 import Legend from "./Legend";
 
@@ -8,17 +8,19 @@ function Towers({
   towers,
   setSelectedTowers,
   kmFilter,
-  setKmFilter
+  setKmFilter,
+  candidateMode,
+  toggleCandidateMode,
 }) {
   const [options, setOptions] = useState([]);
   const [filterKmBool, setFilterKmBool] = useState(false);
 
   useEffect(() => {
-    setOptions(towers.map(t => ({ value: t })));
-  }, [towers])
+    setOptions(towers.map((t) => ({ value: t })));
+  }, [towers]);
 
   const handleChange = (value) => {
-    setSelectedTowers(value)
+    setSelectedTowers(value);
   };
 
   return (
@@ -26,7 +28,7 @@ function Towers({
       <Select
         mode="tags"
         allowClear
-        style={{ width: '300px' }}
+        style={{ width: "300px" }}
         placeholder="Search for a towers"
         onChange={handleChange}
         options={options}
@@ -37,23 +39,31 @@ function Towers({
           checked={filterKmBool}
           onChange={() => {
             if (filterKmBool) {
-              setKmFilter(null)
+              setKmFilter(null);
             } else {
-              setKmFilter(5)
+              setKmFilter(5);
             }
-            setFilterKmBool(!filterKmBool)
+            setFilterKmBool(!filterKmBool);
           }}
         >
           Filter to km:
         </Checkbox>
         <InputNumber
-          min={1} max={30}
+          min={1}
+          max={30}
           value={kmFilter}
-          onChange={value => setKmFilter(value)}
+          onChange={(value) => setKmFilter(value)}
           disabled={!filterKmBool}
           style={{ width: "48px" }}
         ></InputNumber>
       </div>
+      <Button
+        style={{ marginTop: "20px" }}
+        onClick={() => toggleCandidateMode(!candidateMode)}
+        type={candidateMode ? "primary" : "dashed"}
+      >
+        Choose Candidate Tree
+      </Button>
     </div>
   );
 }
