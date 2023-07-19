@@ -39,15 +39,17 @@ function Map({ legend, features, candidateMode, toggleCandidateMode }) {
       .setData(createGeoJSONCircle([coordinates.lng, coordinates.lat], 5).data);
 
     toggleCandidateMode(false);
-  });
+  }, []);
 
   useEffect(() => {
     map.current.getCanvas().style.cursor = candidateMode ? "crosshair" : "grab";
 
+    const currentMap = map.current;
+
     // do this to avoid adding multiple event handlers on the map
-    if (candidateMode) map.current.on("click", selectCandidate);
-    return () => map.current.off("click", selectCandidate);
-  }, [candidateMode]);
+    if (candidateMode) currentMap.on("click", selectCandidate);
+    return () => currentMap.off("click", selectCandidate);
+  }, [candidateMode, selectCandidate]);
 
   return <div ref={mapContainer} className="map-container" />;
 }
