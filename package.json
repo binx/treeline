@@ -8,7 +8,11 @@
     "@testing-library/user-event": "^13.5.0",
     "@turf/turf": "^6.5.0",
     "antd": "^5.5.1",
+    "bresenham": "^0.0.4",
+    "express": "^4.18.2",
+    "geotiff": "^2.0.7",
     "mapbox-gl": "^2.15.0",
+    "node-fetch": "^3.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
@@ -16,6 +20,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "server": "node server/index.mjs",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -26,6 +31,7 @@
       "react-app/jest"
     ]
   },
+  "proxy": "http://127.0.0.1:4000",
   "browserslist": {
     "production": [
       "defaults",

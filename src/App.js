@@ -41,6 +41,12 @@ function App() {
   const [selectedTowers, setSelectedTowers] = useState([]);
   const [candidateMode, toggleCandidateMode] = useState(false);
 
+  // useEffect(() => {
+  //   fetch("/get-trees")
+  //     .then((resp) => resp.json())
+  //     .then((result) => console.log(result));
+  // });
+
   useEffect(() => {
     fetch(trees)
       .then((resp) => resp.text())
@@ -77,6 +83,9 @@ function App() {
 
           array.push(obj);
         }
+
+        console.log(array);
+        console.log(uniqueTowers);
 
         setData(array);
         setTowers(uniqueTowers.sort());

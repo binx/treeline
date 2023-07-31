@@ -79,8 +79,6 @@ export const loadInitialMap = function (mapContainer, map, marker, legend) {
       const el = document.createElement("div");
       el.className = "marker";
 
-      console.log(feature);
-
       // make a marker for each feature and add to the map
       new mapboxgl.Marker(el)
         .setLngLat(feature.geometry.coordinates)
