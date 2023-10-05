@@ -3,12 +3,18 @@ import GeoTIFF, { fromFile } from "geotiff";
 import bresenham from "bresenham";
 import fs from "fs";
 
+import { loadTiff } from "./geotiff.mjs";
+
 const app = express();
 
 // const cors = require("cors")
 
 // app.use(cors)
 app.use(express.json());
+
+app.get("/load-tiff", (req, res) => {
+  loadTiff(res);
+});
 
 app.get("/get-trees", (req, res) => {
   (async function () {
@@ -52,12 +58,12 @@ app.get("/get-trees", (req, res) => {
 
       treesWithTowers.push({
         lat,
-        lng,
-        towersInSight,
+        lon: lng,
+        aps: towersInSight,
       });
     }
 
-    res.send(treesWithTowers.filter((t) => t.towersInSight.length));
+    res.send(treesWithTowers.filter((t) => t.aps.length));
   })();
 });
 
@@ -94,12 +100,6 @@ const getLatLngfromPixel = (image, x, y) => {
   const pixelToGPS = [gx, sx, 0, gy, 0, sy];
   const [lng, lat] = transformFromMatrix(y, x, pixelToGPS, false);
 
-  // const gpsBBox = [
-  //   transformFromMatrix(x, y, pixelToGPS),
-  //   transformFromMatrix(x + 1, y + 1, pixelToGPS),
-  // ];
-  // console.log(`Pixel covers the following GPS area:`, gpsBBox);
-
   return { lat, lng };
 };
 
@@ -108,7 +108,7 @@ const getTreeIndices = (data) => {
   const pixels = data[0];
 
   const offset = 2;
-  const clearance = 4;
+  const clearance = 1;
   const trees = [];
 
   for (let x = offset; x < width - offset; x++) {
@@ -167,12 +167,14 @@ const findClearLineOfSight = ({ testTree, image, data, towersInTIF }) => {
     );
     let isVisible = true;
 
+    const clearanceThreshold = 0.5;
+
     for (var j = 0; j < line.length; j++) {
       const point = line[j];
       const cartesian = [point.x, point.y];
       const zPixel = pixels[point.y * width + point.x];
       const zTreeline = slope * (cartesian[axis] - testCoords[axis]) + z1;
-      if (zPixel > zTreeline) {
+      if (zPixel > zTreeline + clearanceThreshold) {
         isVisible = false;
         break;
       }

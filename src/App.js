@@ -41,56 +41,94 @@ function App() {
   const [selectedTowers, setSelectedTowers] = useState([]);
   const [candidateMode, toggleCandidateMode] = useState(false);
 
-  // useEffect(() => {
-  //   fetch("/get-trees")
-  //     .then((resp) => resp.json())
-  //     .then((result) => console.log(result));
-  // });
+  const [loadingMode, setLoadingMode] = useState(true);
 
   useEffect(() => {
-    fetch(trees)
-      .then((resp) => resp.text())
+    fetch("/load-tiff")
+      .then((resp) => resp.json())
       .then((result) => {
-        const array = [];
-        let uniqueTowers = [];
-
-        const lines = result.split("\n");
-        const headers = lines[0].split(",");
-
-        for (let i = 1; i < lines.length; i++) {
-          var obj = {};
-          var currentline = lines[i].split(",");
-          for (let j = 0; j < headers.length; j++) {
-            obj[headers[j]] = currentline[j];
-          }
-
-          if (obj.aps) {
-            const seenTowers = obj.aps.split(";").map((a) => {
-              //a.replace(/\([^()]*\)$/, "").trim()
-
-              // messy :)
-              const parts = a.split("(");
-              return {
-                tower: parts[0].trim(),
-                distance: +parts[1].split("km")[0],
-              };
-            });
-
-            obj.aps = seenTowers;
-            const towerList = seenTowers.map((t) => t.tower);
-            uniqueTowers = [...new Set([...uniqueTowers, ...towerList])];
-          }
-
-          array.push(obj);
-        }
-
-        console.log(array);
-        console.log(uniqueTowers);
-
-        setData(array);
-        setTowers(uniqueTowers.sort());
+        console.log(result);
       });
+
+    // fetch("/get-trees")
+    //   .then((resp) => resp.json())
+    //   .then((result) => {
+    //     console.log(result);
+    //     const array = [];
+    //     let uniqueTowers = [];
+
+    //     result.forEach((tree) => {
+    //       const towerList = tree.aps.map((t) => t.tower);
+    //       uniqueTowers = [...new Set([...uniqueTowers, ...towerList])];
+    //       array.push(tree);
+    //     });
+
+    //     // console.log(array);
+
+    //     setLoadingMode(false);
+
+    //     setData(array);
+    //     setTowers(uniqueTowers.sort());
+
+    //     let treeFeatures = [];
+    //     array.forEach((obj) => {
+    //       // if (!obj.aps.length) return;
+    //       treeFeatures.push({
+    //         type: "Feature",
+    //         geometry: {
+    //           type: "Point",
+    //           coordinates: [obj.lon, obj.lat],
+    //         },
+    //         properties: {
+    //           type: obj.aps.length ? "intersection" : "union",
+    //         },
+    //       });
+    //     });
+    //     setFeatures(treeFeatures);
+    //   });
   }, []);
+
+  // useEffect(() => {
+  //   fetch(trees)
+  //     .then((resp) => resp.text())
+  //     .then((result) => {
+  //       const array = [];
+  //       let uniqueTowers = [];
+
+  //       const lines = result.split("\n");
+  //       const headers = lines[0].split(",");
+
+  //       for (let i = 1; i < lines.length; i++) {
+  //         var obj = {};
+  //         var currentline = lines[i].split(",");
+  //         for (let j = 0; j < headers.length; j++) {
+  //           obj[headers[j]] = currentline[j];
+  //         }
+
+  //         if (obj.aps) {
+  //           const seenTowers = obj.aps.split(";").map((a) => {
+  //             //a.replace(/\([^()]*\)$/, "").trim()
+
+  //             // messy :)
+  //             const parts = a.split("(");
+  //             return {
+  //               tower: parts[0].trim(),
+  //               distance: +parts[1].split("km")[0],
+  //             };
+  //           });
+
+  //           obj.aps = seenTowers;
+  //           const towerList = seenTowers.map((t) => t.tower);
+  //           uniqueTowers = [...new Set([...uniqueTowers, ...towerList])];
+  //         }
+
+  //         array.push(obj);
+  //       }
+
+  //       setData(array);
+  //       setTowers(uniqueTowers.sort());
+  //     });
+  // }, []);
 
   useEffect(() => {
     if (!data.length) return;
@@ -142,6 +180,7 @@ function App() {
 
   return (
     <div>
+      {loadingMode && <h1>loading!</h1>}
       <Towers
         legend={legend}
         towers={towers}
